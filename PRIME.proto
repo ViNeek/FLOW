@@ -1,0 +1,152 @@
+package PRIME;
+
+message PRIMEMessage {
+	enum MsgType { 
+		PRIME_REPLY = 1;
+		PRIME_REQUEST = 2;
+		PRIME_REPORT = 3; 
+		PRIME_HOLE_PUNCH = 4;
+	}
+
+	// Identifies which field is filled in.
+	required MsgType type = 1;
+
+	optional Reply reply = 2;
+	optional Request request = 3;
+	optional Report report = 4;
+	optional string dummy = 5;
+}
+
+message PeerInfo {
+    required string ipAddr = 1;
+    required int32 repPort = 2;
+    required int32 rtpPort = 3;
+}
+
+message Reply {
+	enum ReplyType {
+        NULL_TYPE = 1;
+		CS_SESSION_INIT = 2;
+		P2P_SESSION_INIT = 3;
+		CS_SESSION_END = 4;
+		P2P_SESSION_END = 5;
+		SPEED_TEST = 6;
+    }
+
+    required ReplyType Type = 1;
+
+    message CSSIReply {
+        required int32 streamPort = 1;
+        required string sdp = 2;
+        required int32 maxFrameCount = 3;
+        required int32 width = 4;
+        required int32 height = 5;
+        required int32 pixFmt = 6;
+        required PeerInfo diffParent = 7;
+    }
+    optional CSSIReply cs_session_state = 21;
+
+    message PeerState {
+        required PeerInfo dest = 1;
+        repeated PeerInfo diffParents = 2;
+        repeated PeerInfo diffChildren = 3;
+        repeated PeerInfo swarmParents = 4;
+        repeated PeerInfo swarmChildren = 5;
+    }
+
+    message PRIMEState {
+        repeated PeerState nodes = 1;
+    }
+
+    message P2PSIReply {
+        required int32 streamPort = 1;
+        required string sdp = 2;
+        required int32 maxFrameCount = 3;
+        required int32 width = 4;
+        required int32 height = 5;
+        required int32 pixFmt = 6;
+        required PeerInfo diffParent = 7;
+    }
+    optional P2PSIReply p2p_session_state = 22;
+}
+
+message Request {
+	enum RequestType {
+        NULL_TYPE = 1;
+		CS_SESSION_INIT = 2;
+		P2P_SESSION_INIT = 3;
+		CS_SESSION_END = 4;
+		P2P_SESSION_END = 5;
+		SERVE_AS_SWARMING_PARENT = 6;
+		BECOME_SWARMING_CHILD = 7;
+		SERVE_AS_DIFFUSION_PARENT = 8;
+		BECOME_DIFFUSION_CHILD = 9;
+    }
+
+    required RequestType Type = 1;
+
+    message CSSIRequest {
+        required double DBW = 1;
+        required string peerName = 2;
+        required int32 repPort = 3;
+        required string ipAddr = 4;
+    }
+    optional CSSIRequest cs_session_props = 21;
+
+    message P2PSIRequest {
+        required double DBW = 1;
+        required double UBW = 2;
+        required int32 repPort = 3;
+        required int32 rtpRecvPort = 4;
+        required int32 repSendPort = 5;
+        required string peerName = 6;
+        required string ipAddr = 7;
+    }
+    optional P2PSIRequest p2p_session_props = 22;
+}
+
+message Report {
+    enum ReportType {
+        NULL_TYPE = 1;
+        SWARM_REPORT_TYPE = 2;
+        DIFF_REPORT_TYPE = 3; // Maybe (Will see...)
+        ADD_DIFF_PARENT_TYPE = 4;
+        ADD_DIFF_CHILD_TYPE = 5;
+        ADD_SWARM_PARENT_TYPE = 6;
+        ADD_SWARM_CHILD_TYPE = 7;
+    }
+
+    required ReportType Type = 1;
+
+    message DiffusionReport {
+        required uint64 start_ts = 1;
+        required uint64 end_ts = 2;
+        required uint32 start_seq = 3;
+        required uint32 end_seq = 4;
+    }
+    optional DiffusionReport diff_report = 21;
+
+    message SwarmingReport {
+        required uint32 start_seq = 1;
+        required uint32 end_seq = 2;
+        repeated bool state = 3;
+    }
+    optional SwarmingReport swarm_report = 22;
+
+    message AddDiffParentReport {
+        required string peerName = 1;
+        required int32 stream_port = 2;
+        required int32 rep_port = 3;
+    }
+    optional AddDiffParentReport add_diff_parent_report = 23;
+
+    message AddSwarmParentReport {
+        required PeerInfo swarmParent = 1;
+    }
+    optional AddSwarmParentReport add_swarm_parent_report = 24;
+
+    message AddSwarmChildReport {
+        required PeerInfo swarmChild = 1;
+    }
+    optional AddSwarmChildReport add_swarm_child_report = 25;
+}
